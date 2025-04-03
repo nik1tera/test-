@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ article.title|default('Без заголовка') }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .content-wrapper {
+            margin-top: 30px;
+        }
+        .text-content {
+            margin: 25px 0;
+            font-size: 1.1em;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .photo-container {
+            margin: 20px 0;
+            text-align: center;
+        }
+        .photo-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+        }
+        .photo-caption {
+            margin-top: 8px;
+            font-style: italic;
+            color: #666;
+            font-size: 0.9em;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+        }
+        .modal-content {
+            background-color: #fff;
+            margin: 20px auto;
+            padding: 30px;
+            width: 90%;
+            max-width: 1000px;
+            border-radius: 8px;
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-photos {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .modal-photos .photo-container {
+            margin: 0;
+        }
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #333;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin: 10px 0;
+        }
+        .button:hover {
+            background-color: #2980b9;
+        }
+        
+                h1 {
+            text-align: center;
+            height: 200px; /* высота */
+            color: #000000;
+            background-image: url(https://kanoner.com/pics/2016/03/tambovskaja-ulyca-17-dvor.jpg),  
+                              url(https://sun9-32.userapi.com/impf/c628620/v628620645/28cd5/b9JPCApv2P8.jpg?size=604x453&quality=96&sign=de2f70c7378e3b43419a9a7be4b1a894&type=album),
+                              url(https://i.postimg.cc/zv907Vyp/image.jpg);
+            background-repeat: no-repeat; /* не повторять изображение */
+            background-size: 30% 100%, 30% 100%, 20% 100%; /* растянуть по высоте и ширине, регулируй сам, если нужна например только школа, обрежь ее лучше в Paint, проще будет */
+            background-position-x: left, right, center; 
+        }   
+      
+        
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>{{ article.title|default('Без заголовка') }}</h1>
+        
+        <div class="content-wrapper">
+            <div class="text-content">
+                {{ article.description|default('Описание отсутствует') }}
+            </div>
+            
+            {% for item in article.content|default([]) %}
+                {% if item.type == 'text' %}
+                    <div class="text-content">
+                        {{ item.content|default('Текст отсутствует') }}
+                        {% if item.photos %}
+                            {% for photo in item.photos %}
+                                <div class="photo-container">
+                                    <img src="{{ photo.image|default('images/default.jpg') }}" 
+                                         alt="{{ photo.caption|default('') }}">
+                                    {% if photo.caption %}
+                                        <p class="photo-caption">{{ photo.caption }}</p>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                
+                {% elif item.type == 'modal' %}
+                    <button class="button {{ item.button_class|default('') }}" 
+                            onclick="document.getElementById('modal-{{ loop.index }}').style.display='block'">
+                        {{ item.button_text|default('Открыть') }}
+                    </button>
+                    
+                    <div id="modal-{{ loop.index }}" class="modal">
+                        <div class="modal-content">
+                            <span class="close-modal" 
+                                  onclick="document.getElementById('modal-{{ loop.index }}').style.display='none'">
+                                &times;
+                            </span>
+                            <h2>{{ item.title|default('Модальное окно') }}</h2>
+                            <div>{{ item.content|default('<p>Содержимое модального окна</p>')|safe }}</div>
+                            
+                            {% if item.photos %}
+                                <div class="modal-photos">
+                                    {% for photo in item.photos %}
+                                        <div class="photo-container">
+                                            <img src="{{ photo.image|default('images/default.jpg') }}" 
+                                                 alt="{{ photo.caption|default('') }}">
+                                            {% if photo.caption %}
+                                                <p class="photo-caption">{{ photo.caption }}</p>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
